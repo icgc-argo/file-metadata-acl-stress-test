@@ -4,11 +4,12 @@ import { print } from "graphql";
 
 jest.setTimeout(60000);
 
+const RECORD_COUNT = 900;
+
 const query = gql`
   query($sqon: JSON) {
     file {
-      hits(filters: $sqon, first: 1000) {
-        total
+      hits(filters: $sqon, first: 900) {
         edges {
           node {
             file_type
@@ -27,7 +28,6 @@ const getData = ({
   data: {
     file: {
       hits: {
-        total: number;
         edges: {
           node: {
             file_type: string;
@@ -40,6 +40,7 @@ const getData = ({
 }> => {
   const variables = {
     sqon: {
+      // This shows
       op: "and",
       content: [
         frontEndFilter,
@@ -77,13 +78,9 @@ describe("stuff", () => {
         content: [],
       },
     });
-    console.log(
-      "response.data.file.hits.total: ",
-      response.data.file.hits.total
-    );
-    expect(response.data.file.hits.total).toBe(984);
+    expect(response.data.file.hits.edges.length).toBe(RECORD_COUNT);
   });
-  it("All files but CRAM files of PACA-CA only", async () => {
+  it("All files excluding CRAM files of non PACA-CA", async () => {
     const response = await getData({
       frontEndFilter: {
         op: "and",
@@ -134,7 +131,7 @@ describe("stuff", () => {
       ).length
     ).toBe(0);
   });
-  it("All files but CRAM files of PACA-CA only, should handle injection attack", async () => {
+  it("All files excluding CRAM files of non PACA-CA, should handle injection attack", async () => {
     const response = await getData({
       frontEndFilter: {
         op: "and",
