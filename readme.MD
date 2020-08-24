@@ -25,4 +25,4 @@ In order to apply access control, we need to apply additional filters to what is
 
 The use of `not` operation is important to avoid injection attacks. without the `not` layer, `frontEndFilter` may request for resources that should not be accessible as according to `dynamicServerSideFilter`.
 
-The test in this repo aims to confirm the ability to limit access to certain data based on this strategy.
+The test in this repo aims to confirm the ability to limit access to certain data based on this strategy. The specific of Argo' usecase is available in [this file]("./plan.md).
