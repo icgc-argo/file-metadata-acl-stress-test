@@ -1,6 +1,7 @@
 import * as fetch from "isomorphic-fetch";
 import gql from "graphql-tag";
 import { print } from "graphql";
+import { writeFileSync } from "fs";
 
 jest.setTimeout(60000);
 
@@ -80,7 +81,7 @@ describe("stuff", () => {
     });
     expect(response.data.file.hits.edges.length).toBe(RECORD_COUNT);
   });
-  it("All files excluding CRAM files of non PACA-CA", async () => {
+  it("should handle all files excluding CRAM files of non PACA-CA", async () => {
     const response = await getData({
       frontEndFilter: {
         op: "and",
@@ -131,7 +132,59 @@ describe("stuff", () => {
       ).length
     ).toBe(0);
   });
-  it("All files excluding CRAM files of non PACA-CA, should handle injection attack", async () => {
+  it("should handle frontend filter normally", async () => {
+    const response = await getData({
+      frontEndFilter: {
+        op: "and",
+        content: [
+          {
+            op: "in",
+            content: {
+              field: "file_type",
+              value: ["CRAM"],
+            },
+          },
+        ],
+      },
+      negativeFilter: {
+        op: "and",
+        content: [
+          {
+            op: "and",
+            content: [
+              {
+                op: "in",
+                content: {
+                  field: "file_type",
+                  value: ["CRAM"],
+                },
+              },
+              {
+                op: "not",
+                content: [
+                  {
+                    op: "in",
+                    content: {
+                      field: "study_id",
+                      value: ["PACA-CA"],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    expect(
+      response.data.file.hits.edges.every((e) => e.node.file_type === "CRAM")
+    ).toBe(true);
+    expect(
+      response.data.file.hits.edges.every((e) => e.node.study_id === "PACA-CA")
+    );
+  });
+  it("should handle all files excluding CRAM files of non PACA-CA, should handle injection attack", async () => {
     const response = await getData({
       frontEndFilter: {
         op: "and",
